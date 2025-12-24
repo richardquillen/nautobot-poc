@@ -8,6 +8,8 @@ This guide is for setting up a Nautobot PoC on a Debian distro using Nautobot's 
 
 I am specifically running on Ubuntu.
 
+Run the following:
+
 ```bash
 sudo apt update
 sudo apt install -y ca-certificates curl gnupg'
@@ -15,6 +17,17 @@ sudo install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 sudo chmod a+r /etc/apt/keyrings/docker.gpg
 ```
+
+### What are these commands doing?
+apt update: Gets most up-to-date versions of software from Ubuntu's artifactory
+
+apt install -y ca-cert...: Allows you to add external package repositories
+
+install -m 0755...: Creates a directory to store APT repository signing keys. You may already have this set up if you regularly use Ubuntu, skip if so.
+
+curl -rsSl...: Downloads and installs Docker's GPG key
+
+chmod a+r...: lets apt read the key
 
 then
 
@@ -25,11 +38,15 @@ echo \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 ```
 
+### Why?
+This adds Docker's official package repo to that list. I believe I found this in a Docker doc somewhere.
+
 and finally
 
 ```bash
 sudo apt update
 ```
+
 ## Install Docker
 
 You should be able to install docker with:
@@ -51,7 +68,7 @@ docker --version
 docker compose version
 
 ```
-and have it return something like
+and it should return something like
 
 ```bash
 Docker version 28.2.2, build 28.2.2-0ubuntu1~24.04.1
@@ -95,13 +112,17 @@ cp environments/creds.example.env environments/creds.env
 ```
 In environments/local.env, change "NAUTOBOT_CREATE_SUPERUSER=true
 
+Feel free to play around with local and creds, but don't change too much. In creds, you can determine the username/password for the login credential.
+
 ## Setup local invoke file
+Nautobot's repo conveniently sets up this invoke.yml for you to do all the docker composing behind the scenes. Nice.
 
 ```bash
 cp invoke.example.yml invoke.yml
 ```
 
 ## Do not require elevation for docker
+Docker doesn't like when you use sudo, at least when I was attempting to compose. Use this to avoid that.
 
 ```bash
 sudo usermod -aG docker $USER
